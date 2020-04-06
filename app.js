@@ -1,6 +1,5 @@
 var budgetController = (function() {
-    // Get newItem object from uiController. What's the best way to do this?
-    /*
+
     var newItem;
     var totalIncome;
     var totalExpenses;
@@ -14,29 +13,27 @@ var budgetController = (function() {
         // var totalExpenses = the existing total expenses without the -
         document.querySelector('.budget__expenses--value').textContent = '- ' + (totalIncome + newItem.number);
     }
+
+    function calculate() {
+
+    }
     // Subtract the total expenses from the total income, then update the budget value.
 
     // For expenses, calculate the percentage of the income that the expense represents.
-    */
+
+    return {
+        updateNumbers: function(newItem) {
+            calculate(newItem);
+        }
+    }
 })();
 
 var uiController = (function() {
-    var Transaction = function(incomeOrExpense, description, number) {
-        this.incomeOrExpense = incomeOrExpense,
-        this.description = description,
-        this.number = number
-    }
 
     var listOfIncome = [];
     var listOfExpenses = [];
 
-    function getUserInput() {
-        var newItem = new Transaction(document.querySelector('.add__type').value, document.querySelector('.add__description').value, document.querySelector('.add__value').value); 
-        addItemToUi(newItem);
-        return {listOfIncome, listOfExpenses};
-    }
-
-    function addItemToUi(newItem) { 
+    function addItemToUi(newItem) {
         var arrLength;
         var list;
         if (newItem.incomeOrExpense == 'inc') {
@@ -72,21 +69,28 @@ var uiController = (function() {
     }
 
     return {
-        publicData: function() {return getUserInput();}
+        updateUi: function(newItem) {
+            addItemToUi(newItem);
+        }
     }
 })();
 
 
 var controller = (function(budgetCtrl, uiCtrl) {
-    document.querySelector('.add__btn').addEventListener("click", uiCtrl.publicData);
-    //document.querySelector('.item__delete--btn').addEventListener('click', uiCtrl.deleteItem);
-/*
-    var z = budgetCtrl.publicTest(5);
-
-    return {
-        anotherPublic: function() {
-            console.log(z);
-        }
+    var Transaction = function(incomeOrExpense, description, number) {
+        this.incomeOrExpense = incomeOrExpense,
+        this.description = description,
+        this.number = number
     }
-*/
+
+    document.querySelector('.add__btn').addEventListener("click", clickedAddButton);
+    //document.querySelector('.item__delete--btn').addEventListener('click', uiCtrl.deleteItem);
+
+    function clickedAddButton () {
+        var newItem = new Transaction(document.querySelector('.add__type').value, document.querySelector('.add__description').value, document.querySelector('.add__value').value);
+        uiCtrl.updateUi(newItem);
+    }
+
+    // Update the ui with the numbers calculated by the budgetController
+    
 })(budgetController, uiController);
