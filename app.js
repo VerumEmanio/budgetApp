@@ -1,21 +1,18 @@
 var budgetController = (function() {
 
-    var newItem;
-    var totalIncome;
-    var totalExpenses;
+    var currentIncome = document.querySelector('.budget__income--value');
+    var currentExpenses = document.querySelector('.budget__expenses--value');
+    var newIncome;
+    var newExpense;
 
-    // If the object says 'inc', increase the income label by the amount listed in the object's value. Otherwise increase the expense label.
+    function calculate(newItem) {
     if (newItem.incomeOrExpense == 'inc') {
-        // var totalIncome = the existing total income without the +
-        totalIncome = 
-        document.querySelector('.budget__income--value').textContent = '+ ' + (totalIncome + newItem.number);
+        newIncome = parseFloat(currentIncome.textContent.slice(2)); // Remove the + and convert the string to a number.
+        newIncome = newIncome + parseFloat(newItem.number);
     } else {
-        // var totalExpenses = the existing total expenses without the -
-        document.querySelector('.budget__expenses--value').textContent = '- ' + (totalIncome + newItem.number);
+        newExpense = parseFloat(currentExpenses.textContent.slice(2)); // Remove the - and convert the string to a number.
+        newExpense = newExpense + parseFloat(newItem.number);
     }
-
-    function calculate() {
-
     }
     // Subtract the total expenses from the total income, then update the budget value.
 
@@ -24,7 +21,9 @@ var budgetController = (function() {
     return {
         updateNumbers: function(newItem) {
             calculate(newItem);
-        }
+        },
+        get newIncome () { return newIncome },
+        get newExpense () { return newExpense }
     }
 })();
 
@@ -68,6 +67,10 @@ var uiController = (function() {
         }
     }
 
+    function updateIncomeOrExpenseTotal () {
+        //currentIncome.textContent = '+ ' + newIncome;
+    }
+
     return {
         updateUi: function(newItem) {
             addItemToUi(newItem);
@@ -88,9 +91,12 @@ var controller = (function(budgetCtrl, uiCtrl) {
 
     function clickedAddButton () {
         var newItem = new Transaction(document.querySelector('.add__type').value, document.querySelector('.add__description').value, document.querySelector('.add__value').value);
+        budgetCtrl.updateNumbers(newItem);
         uiCtrl.updateUi(newItem);
+        console.log(budgetCtrl.newIncome);
+        console.log(budgetCtrl.newExpense);
     }
 
     // Update the ui with the numbers calculated by the budgetController
-    
+
 })(budgetController, uiController);
