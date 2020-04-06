@@ -1,29 +1,43 @@
 var budgetController = (function() {
 
-    var currentIncome = document.querySelector('.budget__income--value');
-    var currentExpenses = document.querySelector('.budget__expenses--value');
-    var newIncome;
-    var newExpense;
+    var incomeLabel = document.querySelector('.budget__income--value');
+    var expensesLabel = document.querySelector('.budget__expenses--value');
+    var totalIncome = parseFloat(incomeLabel.textContent.slice(2)); // Remove the + and convert the string to a number.
+    var totalExpenses = parseFloat(expensesLabel.textContent.slice(2));
+    var availableBudget;
+    var itemPercentOfTotalIncome;
+    var expensePercentOfTotalIncome;
 
     function calculate(newItem) {
     if (newItem.incomeOrExpense == 'inc') {
-        newIncome = parseFloat(currentIncome.textContent.slice(2)); // Remove the + and convert the string to a number.
-        newIncome = newIncome + parseFloat(newItem.number);
+        totalIncome = totalIncome + parseFloat(newItem.number);
     } else {
-        newExpense = parseFloat(currentExpenses.textContent.slice(2)); // Remove the - and convert the string to a number.
-        newExpense = newExpense + parseFloat(newItem.number);
+        totalExpenses = totalExpenses + parseFloat(newItem.number);
+        itemPercentOfTotalIncome = parseFloat(newItem.number) / totalIncome;
     }
+    availableBudget = totalIncome - totalExpenses;
+    expensePercentOfTotalIncome = totalExpenses / totalIncome;
     }
-    // Subtract the total expenses from the total income, then update the budget value.
-
-    // For expenses, calculate the percentage of the income that the expense represents.
 
     return {
         updateNumbers: function(newItem) {
             calculate(newItem);
         },
-        get newIncome () { return newIncome },
-        get newExpense () { return newExpense }
+        get totalIncome () {
+            return totalIncome;
+        },
+        get totalExpenses () {
+            return totalExpenses;
+        },
+        get availableBudget () {
+            return availableBudget;
+        },
+        get itemPercentOfTotalIncome () {
+            return itemPercentOfTotalIncome;
+        },
+        get expensePercentOfTotalIncome () {
+            return expensePercentOfTotalIncome;
+        }
     }
 })();
 
@@ -32,7 +46,9 @@ var uiController = (function() {
     var listOfIncome = [];
     var listOfExpenses = [];
 
-    function addItemToUi(newItem) {
+    function addItemToUi(newItem, totalIncome, totalExpenses, availableBudget,
+        itemPercentOfTotalIncome, expensePercentOfTotalIncome) {
+
         var arrLength;
         var list;
         if (newItem.incomeOrExpense == 'inc') {
@@ -40,17 +56,21 @@ var uiController = (function() {
             listOfIncome.push(newItem);
             arrLength = listOfIncome.length;
             list = document.querySelector('.income__list');
-            duplicateDiv('income', newItem, arrLength, list);
+            duplicateDiv('income', newItem, arrLength, list, itemPercentOfTotalIncome);
         } else {
             newItem.number = '- ' + newItem.number;
             listOfExpenses.push(newItem);
             arrLength = listOfExpenses.length;
             list = document.querySelector('.expenses__list');
-            duplicateDiv('expense', newItem, arrLength, list);
+            duplicateDiv('expense', newItem, arrLength, list, itemPercentOfTotalIncome);
         }
+        document.querySelector('.budget__income--value').textContent = '+ ' + totalIncome;
+        document.querySelector('.budget__expenses--value').textContent = '- ' + totalExpenses;
+        document.querySelector('.budget__value').textContent = '$' + availableBudget;
+        document.querySelector('.budget__expenses--percentage').textContent = (expensePercentOfTotalIncome * 100) + '%';
     }
 
-    function duplicateDiv(elementName, obj, arrLength, list) {
+    function duplicateDiv(elementName, obj, arrLength, list, percent) {
         var htmlToParse;
         if (elementName == 'income') {
             htmlToParse = '<div class="item clearfix" id="income-"><div class="item__description"></div><div class="right clearfix"><div class="item__value"></div><div class="item__delete"><button class="item__delete--btn"><i class="ion-ios-close-outline"></i></button></div></div></div>';
@@ -63,17 +83,16 @@ var uiController = (function() {
         document.getElementById(elementId).querySelector('.item__description').textContent = obj.description; 
         document.getElementById(elementId).querySelector('.item__value').textContent = obj.number;
         if (elementName == 'expense') {
-            document.getElementById(elementId).querySelector('.item__percentage').textContent = 'placeholder';
+            document.getElementById(elementId).querySelector('.item__percentage').textContent = (percent * 100) + '%';
         }
-    }
 
-    function updateIncomeOrExpenseTotal () {
-        //currentIncome.textContent = '+ ' + newIncome;
     }
 
     return {
-        updateUi: function(newItem) {
-            addItemToUi(newItem);
+        updateUi: function(newItem, totalIncome, totalExpenses, availableBudget,
+            itemPercentOfTotalIncome, expensePercentOfTotalIncome) {
+            addItemToUi(newItem, totalIncome, totalExpenses, availableBudget,
+                itemPercentOfTotalIncome, expensePercentOfTotalIncome);
         }
     }
 })();
@@ -92,11 +111,7 @@ var controller = (function(budgetCtrl, uiCtrl) {
     function clickedAddButton () {
         var newItem = new Transaction(document.querySelector('.add__type').value, document.querySelector('.add__description').value, document.querySelector('.add__value').value);
         budgetCtrl.updateNumbers(newItem);
-        uiCtrl.updateUi(newItem);
-        console.log(budgetCtrl.newIncome);
-        console.log(budgetCtrl.newExpense);
+        uiCtrl.updateUi(newItem, budgetCtrl.totalIncome, budgetCtrl.totalExpenses, budgetCtrl.availableBudget,
+            budgetCtrl.itemPercentOfTotalIncome, budgetCtrl.expensePercentOfTotalIncome);
     }
-
-    // Update the ui with the numbers calculated by the budgetController
-
 })(budgetController, uiController);
