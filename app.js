@@ -5,18 +5,34 @@ var budgetController = (function() {
     var totalIncome = parseFloat(incomeLabel.textContent.slice(2)); // Remove the + and convert the string to a number.
     var totalExpenses = parseFloat(expensesLabel.textContent.slice(2));
     var availableBudget;
-    var itemPercentOfTotalIncome;
-    var expensePercentOfTotalIncome;
+    var itemPercentOfTotalIncome = 0;
+    var expensePercentOfTotalIncome = 0;
+    var allExpenses;
+    var newPercentages = [];
 
     function calculate(newItem) {
     if (newItem.incomeOrExpense == 'inc') {
-        totalIncome = totalIncome + parseFloat(newItem.number);
+        totalIncome = totalIncome + parseFloat(newItem.number); 
+        allExpenses = document.querySelectorAll('[id^="expense-"]'); // Select all ids in the doc that start with 'expense-'.
+        allExpenses.forEach(recalculatePercentage);
     } else {
         totalExpenses = totalExpenses + parseFloat(newItem.number);
-        itemPercentOfTotalIncome = parseFloat(newItem.number) / totalIncome;
+        itemPercentOfTotalIncome = (parseFloat(newItem.number) / totalIncome) * 100;
     }
     availableBudget = totalIncome - totalExpenses;
     expensePercentOfTotalIncome = totalExpenses / totalIncome;
+
+    if (totalIncome == 0) { // Avoid printing 'infinity' from dividing by 0.
+        itemPercentOfTotalIncome = 0;
+        expensePercentOfTotalIncome = 0;
+    }
+    }
+
+    function recalculatePercentage (expenseDiv) {
+        var divId = expenseDiv.id;
+        var percent = Math.round((document.getElementById(divId).querySelector('.item__value').textContent.slice(2) / totalIncome) * 100);
+        newPercentages.push(divId);
+        newPercentages.push(percent);
     }
 
     return {
@@ -37,6 +53,9 @@ var budgetController = (function() {
         },
         get expensePercentOfTotalIncome () {
             return expensePercentOfTotalIncome;
+        },
+        get newPercentages () {
+            return newPercentages;
         }
     }
 })();
@@ -47,8 +66,7 @@ var uiController = (function() {
     var listOfExpenses = [];
 
     function addItemToUi(newItem, totalIncome, totalExpenses, availableBudget,
-        itemPercentOfTotalIncome, expensePercentOfTotalIncome) {
-
+        itemPercentOfTotalIncome, expensePercentOfTotalIncome, newPercentages) {
         var arrLength;
         var list;
         if (newItem.incomeOrExpense == 'inc') {
@@ -57,6 +75,10 @@ var uiController = (function() {
             arrLength = listOfIncome.length;
             list = document.querySelector('.income__list');
             duplicateDiv('income', newItem, arrLength, list, itemPercentOfTotalIncome);
+            if (newPercentages.length >= 0) {
+                console.log('running if');
+                updateExpensePercentages(newPercentages);
+            }    
         } else {
             newItem.number = '- ' + newItem.number;
             listOfExpenses.push(newItem);
@@ -67,7 +89,7 @@ var uiController = (function() {
         document.querySelector('.budget__income--value').textContent = '+ ' + totalIncome;
         document.querySelector('.budget__expenses--value').textContent = '- ' + totalExpenses;
         document.querySelector('.budget__value').textContent = '$' + availableBudget;
-        document.querySelector('.budget__expenses--percentage').textContent = (expensePercentOfTotalIncome * 100) + '%';
+        document.querySelector('.budget__expenses--percentage').textContent = Math.round((expensePercentOfTotalIncome * 100)) + '%';
     }
 
     function duplicateDiv(elementName, obj, arrLength, list, percent) {
@@ -83,16 +105,35 @@ var uiController = (function() {
         document.getElementById(elementId).querySelector('.item__description').textContent = obj.description; 
         document.getElementById(elementId).querySelector('.item__value').textContent = obj.number;
         if (elementName == 'expense') {
-            document.getElementById(elementId).querySelector('.item__percentage').textContent = (percent * 100) + '%';
+            document.getElementById(elementId).querySelector('.item__percentage').textContent = percent + '%';
         }
+    }
 
+    function updateExpensePercentages (newPercentages) {
+        console.log(newPercentages);
+        console.log(newPercentages.length);
+        
+        for (var i = 0; i < newPercentages.length; i += 2) {
+            console.log('running');
+            console.log('arr length is ' + newPercentages.length);
+            // I want el 0 and 1, 2 and 3, 4 and 5, etc.
+            // i = 0, j = 1
+            // i += 2, j += 2
+            var divId = newPercentages[i]; // 0, 2, 4
+            var percent = newPercentages[1 + i]; // 1, 3, 5
+            console.log('i is ' + i); // 0
+            console.log('i + 1 is ' + (i + 1)); // 1
+            console.log('divid is ' + divId); // expense-0
+            console.log('percent is ' + percent); // 25
+            document.getElementById(divId).querySelector('.item__percentage').textContent = percent + ' %';
+        }
     }
 
     return {
         updateUi: function(newItem, totalIncome, totalExpenses, availableBudget,
-            itemPercentOfTotalIncome, expensePercentOfTotalIncome) {
+            itemPercentOfTotalIncome, expensePercentOfTotalIncome, updatedPercent) {
             addItemToUi(newItem, totalIncome, totalExpenses, availableBudget,
-                itemPercentOfTotalIncome, expensePercentOfTotalIncome);
+                itemPercentOfTotalIncome, expensePercentOfTotalIncome, updatedPercent);
         }
     }
 })();
@@ -112,6 +153,6 @@ var controller = (function(budgetCtrl, uiCtrl) {
         var newItem = new Transaction(document.querySelector('.add__type').value, document.querySelector('.add__description').value, document.querySelector('.add__value').value);
         budgetCtrl.updateNumbers(newItem);
         uiCtrl.updateUi(newItem, budgetCtrl.totalIncome, budgetCtrl.totalExpenses, budgetCtrl.availableBudget,
-            budgetCtrl.itemPercentOfTotalIncome, budgetCtrl.expensePercentOfTotalIncome);
+            budgetCtrl.itemPercentOfTotalIncome, budgetCtrl.expensePercentOfTotalIncome, budgetCtrl.newPercentages);
     }
 })(budgetController, uiController);
