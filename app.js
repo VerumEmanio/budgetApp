@@ -173,10 +173,15 @@ var controller = (function(budgetCtrl, uiCtrl) {
     document.querySelector('.expenses__list').addEventListener("click", clickedDeleteButton);
 
     function clickedAddButton () {
-        var newItem = new Transaction(document.querySelector('.add__type').value, document.querySelector('.add__description').value, document.querySelector('.add__value').value);
-        budgetCtrl.updateNumbers(newItem);
-        uiCtrl.updateUi(newItem, budgetCtrl.totalIncome, budgetCtrl.totalExpenses, budgetCtrl.availableBudget,
-            budgetCtrl.itemPercentOfTotalIncome, budgetCtrl.expensePercentOfTotalIncome, budgetCtrl.newPercentages);
+        if ((document.querySelector('.budget__value').textContent == '+ 0') && (document.querySelector('.add__type').value == 'exp') && (document.getElementById('expense-0') == null))
+        {
+            alert('Please add at least one income item to the list before adding any expenses.');
+        } else {
+            var newItem = new Transaction(document.querySelector('.add__type').value, document.querySelector('.add__description').value, document.querySelector('.add__value').value);
+            budgetCtrl.updateNumbers(newItem);
+            uiCtrl.updateUi(newItem, budgetCtrl.totalIncome, budgetCtrl.totalExpenses, budgetCtrl.availableBudget,
+                budgetCtrl.itemPercentOfTotalIncome, budgetCtrl.expensePercentOfTotalIncome, budgetCtrl.newPercentages);
+        }
     }
 
     function clickedDeleteButton () {
