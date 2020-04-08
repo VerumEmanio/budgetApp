@@ -6,20 +6,20 @@ var budgetController = (function() {
     var availableBudget;
     var itemPercentOfTotalIncome = 0;
     var expensePercentOfTotalIncome = 0;
-    var allExpenses;
+    var allExpenses = document.querySelectorAll('[id^="expense-"]'); // Select all ids in the doc that start with 'expense-'.
     var newPercentages = [];
 
     function calculate(newItem) {
     if (newItem.incomeOrExpense == 'inc') {
         totalIncome = totalIncome + parseFloat(newItem.number); 
-        allExpenses = document.querySelectorAll('[id^="expense-"]'); // Select all ids in the doc that start with 'expense-'.
+        //allExpenses = document.querySelectorAll('[id^="expense-"]'); 
         allExpenses.forEach(recalculatePercentage);
     } else {
         totalExpenses = totalExpenses + parseFloat(newItem.number);
         itemPercentOfTotalIncome = (parseFloat(newItem.number) / totalIncome) * 100;
     }
     availableBudget = totalIncome - totalExpenses;
-    expensePercentOfTotalIncome = totalExpenses / totalIncome;
+    expensePercentOfTotalIncome = Math.floor(totalExpenses / totalIncome) * 100;
 
     if (totalIncome == 0) { // Avoid printing 'infinity' from dividing by 0.
         itemPercentOfTotalIncome = 0;
@@ -35,14 +35,28 @@ var budgetController = (function() {
     }
 
     function getDeleteButtonDivInfo (elementId) {
+        var myDiv = document.getElementById(elementId);
+        var itemValue = myDiv.querySelector('.item__value').textContent.slice(2);
+        var plusOrMinus = myDiv.querySelector('.item__value').textContent.substring(0, 1);
 
+        if (plusOrMinus == '+') { 
+            totalIncome = totalIncome - parseFloat(itemValue);
+        } else { 
+            totalExpenses = totalExpenses - parseFloat(itemValue);
+        }
+        availableBudget = totalIncome - totalExpenses;
+        expensePercentOfTotalIncome = Math.floor(totalExpenses / totalIncome) * 100;
+        if (plusOrMinus == '+') {
+            allExpenses = document.querySelectorAll('[id^="expense-"]');
+            allExpenses.forEach(recalculatePercentage);
+        }
     }
 
     return {
         updateNumbers: function(newItem) {
             calculate(newItem);
         },
-        getDivInfo: function (elementId) {
+        passDivId: function (elementId) {
             getDeleteButtonDivInfo(elementId);
         },
         get totalIncome () {
@@ -69,11 +83,13 @@ var budgetController = (function() {
 var uiController = (function() {
     var listOfIncome = [];
     var listOfExpenses = [];
+    var arrOfPercentages;
 
     function addItemToUi(newItem, totalIncome, totalExpenses, availableBudget,
         itemPercentOfTotalIncome, expensePercentOfTotalIncome, newPercentages) {
         var arrLength;
         var list;
+        arrOfPercentages = newPercentages;
         if (newItem.incomeOrExpense == 'inc') {
             newItem.number = '+ ' + newItem.number;
             listOfIncome.push(newItem);
@@ -93,7 +109,7 @@ var uiController = (function() {
         document.querySelector('.budget__income--value').textContent = '+ ' + totalIncome;
         document.querySelector('.budget__expenses--value').textContent = '- ' + totalExpenses;
         document.querySelector('.budget__value').textContent = '$' + availableBudget;
-        document.querySelector('.budget__expenses--percentage').textContent = Math.round((expensePercentOfTotalIncome * 100)) + '%';
+        document.querySelector('.budget__expenses--percentage').textContent = Math.round(expensePercentOfTotalIncome) + '%';
     }
 
     function duplicateDiv(elementName, obj, arrLength, list, percent) {
@@ -113,7 +129,7 @@ var uiController = (function() {
         }
     }
 
-    function updateExpensePercentages (newPercentages) {
+    function updateExpensePercentages(newPercentages) {
         for (var i = 0; i < newPercentages.length; i += 2) {
             var divId = newPercentages[i]; 
             var percent = newPercentages[1 + i]; 
@@ -121,11 +137,24 @@ var uiController = (function() {
         }
     }
 
+    function deleteItemFromUi(elementId, totalIncome, totalExpenses, availableBudget, expensePercentOfTotalIncome, newPercentages) {
+        var myDiv = document.getElementById(elementId);
+        myDiv.remove();
+        document.querySelector('.budget__income--value').textContent = '+ ' + totalIncome;
+        document.querySelector('.budget__expenses--value').textContent = '- ' + totalExpenses;
+        document.querySelector('.budget__value').textContent = '$' + availableBudget;
+        document.querySelector('.budget__expenses--percentage').textContent = Math.round(expensePercentOfTotalIncome) + '%';
+        updateExpensePercentages(newPercentages);
+    }
+
     return {
         updateUi: function(newItem, totalIncome, totalExpenses, availableBudget,
-            itemPercentOfTotalIncome, expensePercentOfTotalIncome, updatedPercent) {
+            itemPercentOfTotalIncome, expensePercentOfTotalIncome, newPercentages) {
             addItemToUi(newItem, totalIncome, totalExpenses, availableBudget,
-                itemPercentOfTotalIncome, expensePercentOfTotalIncome, updatedPercent);
+                itemPercentOfTotalIncome, expensePercentOfTotalIncome, newPercentages);
+        },
+        deleteDiv: function (elementId, totalIncome, totalExpenses, availableBudget, expensePercentOfTotalIncome, newPercentages) {
+            deleteItemFromUi(elementId, totalIncome, totalExpenses, availableBudget, expensePercentOfTotalIncome, newPercentages);
         }
     }
 })();
@@ -152,9 +181,10 @@ var controller = (function(budgetCtrl, uiCtrl) {
 
     function clickedDeleteButton () {
         if (event.target.nodeName == 'I') {
-            buttonAncestor = event.target.parentElement.parentElement.parentElement.parentElement.id; // Get the id of the item containing the clicked button.
-            console.log(buttonAncestor);
-            // Pass buttonAncestor to the budget controller for calculations.
+            buttonAncestor = event.target.parentElement.parentElement.parentElement.parentElement.id; // Get the id of the div containing the clicked button.
+            budgetCtrl.passDivId(buttonAncestor);
+            uiCtrl.deleteDiv(buttonAncestor, budgetCtrl.totalIncome, budgetCtrl.totalExpenses, budgetCtrl.availableBudget,
+            budgetCtrl.expensePercentOfTotalIncome, budgetCtrl.newPercentages);
         }
     }
 })(budgetController, uiController);
