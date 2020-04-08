@@ -1,5 +1,4 @@
 var budgetController = (function() {
-
     var incomeLabel = document.querySelector('.budget__income--value');
     var expensesLabel = document.querySelector('.budget__expenses--value');
     var totalIncome = parseFloat(incomeLabel.textContent.slice(2)); // Remove the + and convert the string to a number.
@@ -35,9 +34,16 @@ var budgetController = (function() {
         newPercentages.push(percent);
     }
 
+    function getDeleteButtonDivInfo (elementId) {
+
+    }
+
     return {
         updateNumbers: function(newItem) {
             calculate(newItem);
+        },
+        getDivInfo: function (elementId) {
+            getDeleteButtonDivInfo(elementId);
         },
         get totalIncome () {
             return totalIncome;
@@ -61,7 +67,6 @@ var budgetController = (function() {
 })();
 
 var uiController = (function() {
-
     var listOfIncome = [];
     var listOfExpenses = [];
 
@@ -76,7 +81,6 @@ var uiController = (function() {
             list = document.querySelector('.income__list');
             duplicateDiv('income', newItem, arrLength, list, itemPercentOfTotalIncome);
             if (newPercentages.length >= 0) {
-                console.log('running if');
                 updateExpensePercentages(newPercentages);
             }    
         } else {
@@ -110,21 +114,9 @@ var uiController = (function() {
     }
 
     function updateExpensePercentages (newPercentages) {
-        console.log(newPercentages);
-        console.log(newPercentages.length);
-        
         for (var i = 0; i < newPercentages.length; i += 2) {
-            console.log('running');
-            console.log('arr length is ' + newPercentages.length);
-            // I want el 0 and 1, 2 and 3, 4 and 5, etc.
-            // i = 0, j = 1
-            // i += 2, j += 2
-            var divId = newPercentages[i]; // 0, 2, 4
-            var percent = newPercentages[1 + i]; // 1, 3, 5
-            console.log('i is ' + i); // 0
-            console.log('i + 1 is ' + (i + 1)); // 1
-            console.log('divid is ' + divId); // expense-0
-            console.log('percent is ' + percent); // 25
+            var divId = newPercentages[i]; 
+            var percent = newPercentages[1 + i]; 
             document.getElementById(divId).querySelector('.item__percentage').textContent = percent + ' %';
         }
     }
@@ -147,7 +139,12 @@ var controller = (function(budgetCtrl, uiCtrl) {
     }
 
     document.querySelector('.add__btn').addEventListener("click", clickedAddButton);
-    //document.querySelector('.item__delete--btn').addEventListener('click', uiCtrl.deleteItem);
+    document.querySelector('.income__list').addEventListener("click", function () {
+        if (event.target.nodeName == 'I') {
+            console.log('found the button!');
+        }
+    });
+    //document.querySelector('.expenses__list').addEventListener("click", checkForItems);
 
     function clickedAddButton () {
         var newItem = new Transaction(document.querySelector('.add__type').value, document.querySelector('.add__description').value, document.querySelector('.add__value').value);
