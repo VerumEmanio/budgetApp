@@ -137,19 +137,24 @@ var controller = (function(budgetCtrl, uiCtrl) {
         this.description = description,
         this.number = number
     }
+    var buttonAncestor;
 
     document.querySelector('.add__btn').addEventListener("click", clickedAddButton);
-    document.querySelector('.income__list').addEventListener("click", function () {
-        if (event.target.nodeName == 'I') {
-            console.log('found the button!');
-        }
-    });
-    //document.querySelector('.expenses__list').addEventListener("click", checkForItems);
+    document.querySelector('.income__list').addEventListener("click", clickedDeleteButton);
+    document.querySelector('.expenses__list').addEventListener("click", clickedDeleteButton);
 
     function clickedAddButton () {
         var newItem = new Transaction(document.querySelector('.add__type').value, document.querySelector('.add__description').value, document.querySelector('.add__value').value);
         budgetCtrl.updateNumbers(newItem);
         uiCtrl.updateUi(newItem, budgetCtrl.totalIncome, budgetCtrl.totalExpenses, budgetCtrl.availableBudget,
             budgetCtrl.itemPercentOfTotalIncome, budgetCtrl.expensePercentOfTotalIncome, budgetCtrl.newPercentages);
+    }
+
+    function clickedDeleteButton () {
+        if (event.target.nodeName == 'I') {
+            buttonAncestor = event.target.parentElement.parentElement.parentElement.parentElement.id; // Get the id of the item containing the clicked button.
+            console.log(buttonAncestor);
+            // Pass buttonAncestor to the budget controller for calculations.
+        }
     }
 })(budgetController, uiController);
