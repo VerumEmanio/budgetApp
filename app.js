@@ -1,12 +1,12 @@
 var budgetController = (function() {
     var incomeLabel = document.querySelector('.budget__income--value');
     var expensesLabel = document.querySelector('.budget__expenses--value');
-    var totalIncome = parseFloat(incomeLabel.textContent.slice(2)); // Remove the + and convert the string to a number.
+    var totalIncome = parseFloat(incomeLabel.textContent.slice(2)); /* Remove the + and convert the string to a number. */
     var totalExpenses = parseFloat(expensesLabel.textContent.slice(2));
-    var availableBudget;
+    var availableBudget = 0;
     var itemPercentOfTotalIncome = 0;
     var expensePercentOfTotalIncome = 0;
-    var allExpenses = document.querySelectorAll('[id^="expense-"]'); // Select all ids in the doc that start with 'expense-'.
+    var allExpenses = document.querySelectorAll('[id^="expense-"]'); /* Select all ids in the doc that start with 'expense-'. */
     var newPercentages = [];
 
     function calculate(newItem) {
@@ -20,7 +20,7 @@ var budgetController = (function() {
     availableBudget = totalIncome - totalExpenses;
     expensePercentOfTotalIncome = (totalExpenses / totalIncome) * 100;
 
-    if (totalIncome == 0) { // Avoid printing 'infinity' from dividing by 0.
+    if (totalIncome == 0) { /* Avoid printing 'infinity' from dividing by 0. */
         itemPercentOfTotalIncome = 0;
         expensePercentOfTotalIncome = '-';
     }
@@ -133,7 +133,8 @@ var uiController = (function() {
     }
 
     function updateExpensePercentages(newPercentages) {
-        for (var i = 0; i < newPercentages.length; i += 2) {
+        var length = newPercentages.length;
+        for (var i = 0; i < length; i += 2) {
             var divId = newPercentages[i]; 
             var percent = newPercentages[1 + i]; 
             document.getElementById(divId).querySelector('.item__percentage').textContent = percent + ' %';
@@ -155,7 +156,7 @@ var uiController = (function() {
         var addDescription = document.querySelector('.add__description');
         var addValue = document.querySelector('.add__value');
         var checkButton = document.querySelector('.add__btn');
-        
+
         if (addType.value == 'exp') {
             addType.classList.add('red-focus');
             addDescription.classList.add('red-focus');
@@ -216,7 +217,7 @@ var controller = (function(budgetCtrl, uiCtrl) {
 
     function clickedDeleteButton () {
         if (event.target.nodeName == 'I') {
-            buttonAncestor = event.target.parentElement.parentElement.parentElement.parentElement.id; // Get the id of the div containing the clicked button.
+            buttonAncestor = event.target.parentElement.parentElement.parentElement.parentElement.id; /* Get the id of the div containing the clicked button. */
             budgetCtrl.passDivId(buttonAncestor);
             uiCtrl.deleteDiv(buttonAncestor, budgetCtrl.totalIncome, budgetCtrl.totalExpenses, budgetCtrl.availableBudget,
             budgetCtrl.expensePercentOfTotalIncome, budgetCtrl.newPercentages);
