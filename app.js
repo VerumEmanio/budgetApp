@@ -150,6 +150,25 @@ var uiController = (function() {
         updateExpensePercentages(newPercentages);
     }
 
+    function changeColor () {
+        var addType = document.querySelector('.add__type');
+        var addDescription = document.querySelector('.add__description');
+        var addValue = document.querySelector('.add__value');
+        var checkButton = document.querySelector('.add__btn');
+        
+        if (addType.value == 'exp') {
+            addType.classList.add('red-focus');
+            addDescription.classList.add('red-focus');
+            addValue.classList.add('red-focus');
+            checkButton.classList.add('red');
+        } else {
+            addType.className = 'add__type';
+            addDescription.className = 'add__description';
+            addValue.className = 'add__value';
+            checkButton.className = 'add__btn';
+        }
+    }
+
     return {
         updateUi: function(newItem, totalIncome, totalExpenses, availableBudget,
             itemPercentOfTotalIncome, expensePercentOfTotalIncome, newPercentages) {
@@ -158,6 +177,9 @@ var uiController = (function() {
         },
         deleteDiv: function (elementId, totalIncome, totalExpenses, availableBudget, expensePercentOfTotalIncome, newPercentages) {
             deleteItemFromUi(elementId, totalIncome, totalExpenses, availableBudget, expensePercentOfTotalIncome, newPercentages);
+        },
+        changeColor: function () {
+            changeColor();
         }
     }
 })();
@@ -178,7 +200,7 @@ var controller = (function(budgetCtrl, uiCtrl) {
     checkButton.addEventListener('click', clickedAddButton);
     document.querySelector('.income__list').addEventListener('click', clickedDeleteButton);
     document.querySelector('.expenses__list').addEventListener('click', clickedDeleteButton);
-    addType.addEventListener('change', changeColor);
+    addType.addEventListener('change', uiCtrl.changeColor);
     
     function clickedAddButton () {
         if ((document.querySelector('.budget__value').textContent == '+ 0') && (addType.value == 'exp') && (document.getElementById('expense-0') == null))
@@ -198,20 +220,6 @@ var controller = (function(budgetCtrl, uiCtrl) {
             budgetCtrl.passDivId(buttonAncestor);
             uiCtrl.deleteDiv(buttonAncestor, budgetCtrl.totalIncome, budgetCtrl.totalExpenses, budgetCtrl.availableBudget,
             budgetCtrl.expensePercentOfTotalIncome, budgetCtrl.newPercentages);
-        }
-    }
-
-    function changeColor () {
-        if (addType.value == 'exp') {
-            addType.classList.add('red-focus');
-            addDescription.classList.add('red-focus');
-            addValue.classList.add('red-focus');
-            checkButton.classList.add('red');
-        } else {
-            addType.className = 'add__type';
-            addDescription.className = 'add__description';
-            addValue.className = 'add__value';
-            checkButton.className = 'add__btn';
         }
     }
 })(budgetController, uiController);
