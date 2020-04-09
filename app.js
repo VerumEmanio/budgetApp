@@ -12,18 +12,17 @@ var budgetController = (function() {
     function calculate(newItem) {
     if (newItem.incomeOrExpense == 'inc') {
         totalIncome = totalIncome + parseFloat(newItem.number); 
-        //allExpenses = document.querySelectorAll('[id^="expense-"]'); 
         allExpenses.forEach(recalculatePercentage);
     } else {
         totalExpenses = totalExpenses + parseFloat(newItem.number);
         itemPercentOfTotalIncome = (parseFloat(newItem.number) / totalIncome) * 100;
     }
     availableBudget = totalIncome - totalExpenses;
-    expensePercentOfTotalIncome = Math.floor(totalExpenses / totalIncome) * 100;
+    expensePercentOfTotalIncome = (totalExpenses / totalIncome) * 100;
 
     if (totalIncome == 0) { // Avoid printing 'infinity' from dividing by 0.
         itemPercentOfTotalIncome = 0;
-        expensePercentOfTotalIncome = 0;
+        expensePercentOfTotalIncome = '-';
     }
     }
 
@@ -84,6 +83,9 @@ var uiController = (function() {
     var listOfIncome = [];
     var listOfExpenses = [];
     var arrOfPercentages;
+    var monthNames = ["January", "February", "March", "April", "May","June","July", "August", "September", "October", "November","December"];
+    var d = new Date();
+    document.querySelector('.budget__title--month').textContent = monthNames[d.getMonth()] + ' ' + d.getFullYear();
 
     function addItemToUi(newItem, totalIncome, totalExpenses, availableBudget,
         itemPercentOfTotalIncome, expensePercentOfTotalIncome, newPercentages) {
@@ -125,7 +127,7 @@ var uiController = (function() {
         document.getElementById(elementId).querySelector('.item__description').textContent = obj.description; 
         document.getElementById(elementId).querySelector('.item__value').textContent = obj.number;
         if (elementName == 'expense') {
-            document.getElementById(elementId).querySelector('.item__percentage').textContent = percent + '%';
+            document.getElementById(elementId).querySelector('.item__percentage').textContent = Math.floor(percent) + '%';
         }
     }
 
