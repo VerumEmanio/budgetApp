@@ -85,6 +85,7 @@ var uiController = (function() {
     var arrOfPercentages;
     var monthNames = ["January", "February", "March", "April", "May","June","July", "August", "September", "October", "November","December"];
     var d = new Date();
+
     document.querySelector('.budget__title--month').textContent = monthNames[d.getMonth()] + ' ' + d.getFullYear();
 
     function addItemToUi(newItem, totalIncome, totalExpenses, availableBudget,
@@ -168,18 +169,23 @@ var controller = (function(budgetCtrl, uiCtrl) {
         this.description = description,
         this.number = number
     }
-    var buttonAncestor;
+    var buttonAncestor = '';
+    var addType = document.querySelector('.add__type');
+    var addDescription = document.querySelector('.add__description');
+    var addValue = document.querySelector('.add__value');
+    var checkButton = document.querySelector('.add__btn');
 
-    document.querySelector('.add__btn').addEventListener("click", clickedAddButton);
-    document.querySelector('.income__list').addEventListener("click", clickedDeleteButton);
-    document.querySelector('.expenses__list').addEventListener("click", clickedDeleteButton);
-
+    checkButton.addEventListener('click', clickedAddButton);
+    document.querySelector('.income__list').addEventListener('click', clickedDeleteButton);
+    document.querySelector('.expenses__list').addEventListener('click', clickedDeleteButton);
+    addType.addEventListener('change', changeColor);
+    
     function clickedAddButton () {
-        if ((document.querySelector('.budget__value').textContent == '+ 0') && (document.querySelector('.add__type').value == 'exp') && (document.getElementById('expense-0') == null))
+        if ((document.querySelector('.budget__value').textContent == '+ 0') && (addType.value == 'exp') && (document.getElementById('expense-0') == null))
         {
             alert('Please add at least one income item to the list before adding any expenses.');
         } else {
-            var newItem = new Transaction(document.querySelector('.add__type').value, document.querySelector('.add__description').value, document.querySelector('.add__value').value);
+            var newItem = new Transaction(addType.value, addDescription.value, addValue.value);
             budgetCtrl.updateNumbers(newItem);
             uiCtrl.updateUi(newItem, budgetCtrl.totalIncome, budgetCtrl.totalExpenses, budgetCtrl.availableBudget,
                 budgetCtrl.itemPercentOfTotalIncome, budgetCtrl.expensePercentOfTotalIncome, budgetCtrl.newPercentages);
@@ -192,6 +198,20 @@ var controller = (function(budgetCtrl, uiCtrl) {
             budgetCtrl.passDivId(buttonAncestor);
             uiCtrl.deleteDiv(buttonAncestor, budgetCtrl.totalIncome, budgetCtrl.totalExpenses, budgetCtrl.availableBudget,
             budgetCtrl.expensePercentOfTotalIncome, budgetCtrl.newPercentages);
+        }
+    }
+
+    function changeColor () {
+        if (addType.value == 'exp') {
+            addType.classList.add('red-focus');
+            addDescription.classList.add('red-focus');
+            addValue.classList.add('red-focus');
+            checkButton.classList.add('red');
+        } else {
+            addType.className = 'add__type';
+            addDescription.className = 'add__description';
+            addValue.className = 'add__value';
+            checkButton.className = 'add__btn';
         }
     }
 })(budgetController, uiController);
