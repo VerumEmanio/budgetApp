@@ -6,5 +6,5 @@ A modular, secure [browser-based budget app](https://verumemanio.github.io/budge
 • To add a transaction, select either + or -, write a transaction description, specify the amount, and then click the check box.<br>
 • To remove a transaction, click the x that appears when you hover to the right of an item's value.
 
-<b>Known bugs</b>
+<b>Known bugs</b><br>
 • The percent listed in the total expenses box will sometimes display 0% after an expense is removed from the list.
